@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>培训班会员</title>
+  <style>
+    :root { --primary:#29c7b1; --deep:#18a996; --text:#2f3b52; --muted:#758195; --line:#e7edf3; --bg:#f1f4f7; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:1240px; background:var(--bg); color:var(--text); font:14px "PingFang SC","Microsoft YaHei",sans-serif; }
+    .topbar { height:68px; display:flex; align-items:center; justify-content:space-between; padding:0 32px; background:#fff; border-bottom:1px solid var(--line); }
+    .title { font-size:18px; font-weight:600; }
+    .operator { color:var(--muted); font-size:13px; }
+    main { padding:16px; }
+    .panel { background:#fff; border:1px solid var(--line); }
+    .filters { padding:22px 20px; border-bottom:1px solid var(--line); }
+    .filter-row { display:flex; align-items:center; gap:18px; }
+    .filter-row + .filter-row { margin-top:16px; }
+    .field { display:flex; align-items:center; gap:10px; white-space:nowrap; }
+    label { color:#526074; }
+    input, select { height:34px; border:1px solid #dbe3eb; border-radius:17px; padding:0 14px; outline:none; color:var(--text); background:#fff; font:13px inherit; }
+    input:focus, select:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(41,199,177,.12); }
+    select { min-width:110px; }
+    button { height:34px; min-width:74px; border:1px solid var(--primary); border-radius:17px; background:#fff; color:var(--deep); cursor:pointer; font:13px inherit; }
+    button.primary { background:var(--primary); color:#fff; }
+    button:hover { filter:brightness(.97); }
+    .member-search { display:flex; align-items:center; height:36px; border:1px solid #dbe3eb; border-radius:18px; overflow:hidden; background:#fff; }
+    .member-mode { display:flex; align-items:center; gap:2px; padding:0 5px; }
+    .member-mode button { min-width:auto; height:26px; padding:0 10px; border:0; border-radius:14px; color:#69778b; background:transparent; }
+    .member-mode button.selected { color:#fff; background:var(--primary); }
+    .member-search input { width:330px; height:34px; padding-left:13px; border:0; border-radius:0; }
+    .owner-picker { position:relative; }
+    .owner-picker input { width:138px; }
+    .owner-options { position:absolute; z-index:5; top:40px; left:0; display:none; width:138px; max-height:170px; overflow:auto; padding:4px 0; border:1px solid #dbe3eb; border-radius:4px; background:#fff; box-shadow:0 8px 18px rgba(47,59,82,.12); }
+    .owner-options.show { display:block; }
+    .owner-option, .owner-empty { height:32px; display:flex; align-items:center; padding:0 13px; }
+    .owner-option { color:#4f5d71; cursor:pointer; }
+    .owner-option:hover, .owner-option.selected { color:var(--deep); background:#ecfbf8; }
+    .owner-empty { color:#9aa6b5; }
+    .date { width:140px; }
+    .date-range { display:flex; align-items:center; gap:7px; color:#9aa6b5; }
+    .contact-input { width:148px; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; min-width:1180px; border-collapse:collapse; table-layout:fixed; }
+    th, td { height:50px; padding:0 16px; text-align:left; border-right:1px solid var(--line); border-bottom:1px solid var(--line); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    th { background:#fbfcfe; color:#435069; font-weight:700; }
+    th:last-child, td:last-child { border-right:0; }
+    .member { color:#344055; }
+    .phone { color:var(--muted); margin-left:8px; }
+    .status { display:inline-flex; align-items:center; height:22px; padding:0 8px; border:1px solid; border-radius:4px; font-size:12px; }
+    .active { color:#18a996; background:#ecfbf8; border-color:#bdeee6; }
+    .prospect { color:#c47a16; background:#fff6e8; border-color:#f5d7a7; }
+    .empty { display:none; padding:66px 0; text-align:center; color:var(--muted); }
+    .pagination { height:58px; display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:0 20px; color:var(--muted); font-size:13px; }
+    .page { display:grid; place-items:center; width:28px; height:28px; border:1px solid var(--primary); background:var(--primary); color:#fff; }
+    .toast { position:fixed; top:84px; left:50%; transform:translate(-50%,-12px); padding:10px 16px; border-radius:4px; color:#fff; background:rgba(47,59,82,.9); opacity:0; pointer-events:none; transition:.2s; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="title">培训班会员</div><div class="operator">培训班负责人</div></header>
+  <main>
+    <section class="panel">
+      <div class="filters">
+        <div class="filter-row">
+          <div class="member-search"><div class="member-mode"><button type="button" class="selected" data-mode="member">本人</button><button type="button" data-mode="contact">联系人</button></div><input id="keyword" placeholder="输入姓名/手机号进行搜索" /></div>
+          <button class="primary" id="search">查询</button><button id="reset">重置</button>
+        </div>
+        <div class="filter-row">
+          <div class="field"><label for="owner">跟进人</label><div class="owner-picker"><input id="owner" autocomplete="off" placeholder="请输入跟进人" /><div class="owner-options" id="ownerOptions"></div></div></div>
+          <div class="field"><label for="gender">性别</label><select id="gender"><option value="">全部</option><option>男</option><option>女</option></select></div>
+          <div class="field"><label>生日</label><div class="date-range"><input id="birthdayStart" class="date" type="date" /><span>至</span><input id="birthdayEnd" class="date" type="date" /></div></div>
+          <div class="field"><label for="status">会员状态</label><select id="status"><option value="">全部</option><option>有效会员</option><option>准会员</option></select></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th style="width:22%">会员</th><th style="width:12%">跟进人</th><th style="width:8%">性别</th><th style="width:13%">生日</th><th style="width:13%">会员状态</th><th style="width:16%">联系人姓名</th><th style="width:16%">联系人手机号</th></tr></thead><tbody id="rows"></tbody></table>
+        <div class="empty" id="empty">暂无符合条件的会员</div>
+      </div>
+      <div class="pagination"><span id="total">共 8 条</span><span>10 条/页</span><span class="page">1</span></div>
+    </section>
+  </main>
+  <div class="toast" id="toast">已更新列表</div>
+  <script>
+    const members = [
+      {name:'陈思远',phone:'138 1682 4631',owner:'张晨',gender:'男',birthday:'1990-05-16',status:'有效会员',contactName:'陈明',contactPhone:'139 6073 2815'},
+      {name:'林雨桐',phone:'139 2506 7824',owner:'李娜',gender:'女',birthday:'1996-11-08',status:'准会员',contactName:'林建国',contactPhone:'138 9014 6720'},
+      {name:'周明宇',phone:'136 7719 2058',owner:'王凯',gender:'男',birthday:'1993-02-24',status:'有效会员',contactName:'周晓云',contactPhone:'186 4270 1508'},
+      {name:'许婧',phone:'158 8320 4671',owner:'张晨',gender:'女',birthday:'1998-08-19',status:'有效会员',contactName:'许文博',contactPhone:'135 7816 3492'},
+      {name:'赵子航',phone:'137 4095 6112',owner:'李娜',gender:'男',birthday:'1991-12-30',status:'准会员',contactName:'赵静',contactPhone:'188 3926 7504'},
+      {name:'吴若涵',phone:'186 1538 7094',owner:'王凯',gender:'女',birthday:'1995-04-11',status:'准会员',contactName:'吴志强',contactPhone:'136 5408 9231'},
+      {name:'孙浩然',phone:'135 6854 9270',owner:'张晨',gender:'男',birthday:'1994-09-03',status:'有效会员',contactName:'孙丽华',contactPhone:'159 3807 6154'},
+      {name:'郑佳怡',phone:'188 2640 3186',owner:'李娜',gender:'女',birthday:'1997-06-27',status:'有效会员',contactName:'郑伟',contactPhone:'137 9156 2480'}
+    ];
+    const $ = id => document.getElementById(id);
+    const owners = ['张晨', '李娜', '王凯'];
+    let keywordMode = 'member';
+    const clean = value => value.replaceAll(' ', '');
+    const statusClass = status => status === '有效会员' ? 'active' : 'prospect';
+    function render() {
+      const keyword = clean($('keyword').value.trim()); const owner = $('owner').value.trim(); const gender = $('gender').value; const status = $('status').value;
+      const birthdayStart = $('birthdayStart').value; const birthdayEnd = $('birthdayEnd').value;
+      const result = members.filter(item => {
+        const keywordTarget = keywordMode === 'member' ? clean(item.name + item.phone) : clean(item.contactName + item.contactPhone);
+        return (!keyword || keywordTarget.includes(keyword)) && (!owner || item.owner.includes(owner)) && (!gender || item.gender === gender) && (!birthdayStart || item.birthday >= birthdayStart) && (!birthdayEnd || item.birthday <= birthdayEnd) && (!status || item.status === status);
+      });
+      $('rows').innerHTML = result.map(item => `<tr><td class="member">${item.name}<span class="phone">${item.phone}</span></td><td>${item.owner}</td><td>${item.gender}</td><td>${item.birthday}</td><td><span class="status ${statusClass(item.status)}">${item.status}</span></td><td>${item.contactName}</td><td>${item.contactPhone}</td></tr>`).join('');
+      $('empty').style.display = result.length ? 'none' : 'block'; $('total').textContent = `共 ${result.length} 条`;
+    }
+    function notify() { const toast = $('toast'); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 1400); }
+    function renderOwnerOptions() {
+      const keyword = $('owner').value.trim(); const matched = owners.filter(name => name.includes(keyword));
+      $('ownerOptions').innerHTML = matched.length ? matched.map(name => `<div class="owner-option ${name === keyword ? 'selected' : ''}" data-owner="${name}">${name}</div>`).join('') : '<div class="owner-empty">暂无匹配人员</div>';
+      $('ownerOptions').classList.add('show');
+    }
+    $('search').onclick = () => { render(); notify(); };
+    document.querySelectorAll('.member-mode button').forEach(button => button.addEventListener('click', () => {
+      keywordMode = button.dataset.mode; document.querySelectorAll('.member-mode button').forEach(item => item.classList.toggle('selected', item === button));
+      $('keyword').placeholder = keywordMode === 'member' ? '输入姓名/手机号进行搜索' : '输入联系人姓名/手机号进行搜索'; render();
+    }));
+    $('owner').addEventListener('focus', renderOwnerOptions);
+    $('owner').addEventListener('input', () => { renderOwnerOptions(); render(); });
+    $('ownerOptions').addEventListener('mousedown', event => { const option = event.target.closest('.owner-option'); if (!option) return; $('owner').value = option.dataset.owner; $('ownerOptions').classList.remove('show'); render(); });
+    document.addEventListener('click', event => { if (!event.target.closest('.owner-picker')) $('ownerOptions').classList.remove('show'); });
+    $('reset').onclick = () => { ['keyword','owner','gender','birthdayStart','birthdayEnd','status'].forEach(id => $(id).value = ''); keywordMode = 'member'; document.querySelectorAll('.member-mode button').forEach((item, index) => item.classList.toggle('selected', index === 0)); $('keyword').placeholder = '输入姓名/手机号进行搜索'; $('ownerOptions').classList.remove('show'); render(); notify(); };
+    ['keyword','gender','birthdayStart','birthdayEnd','status'].forEach(id => $(id).addEventListener('change', render));
+    $('keyword').addEventListener('keydown', event => { if (event.key === 'Enter') { render(); notify(); } });
+    render();
+  </script>
+</body>
+</html>

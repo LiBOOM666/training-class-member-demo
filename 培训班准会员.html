@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>培训班准会员</title>
+  <style>
+    :root { --primary:#29c7b1; --deep:#18a996; --text:#2f3b52; --muted:#758195; --line:#e7edf3; --bg:#f1f4f7; --orange:#c47a16; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:1480px; background:var(--bg); color:var(--text); font:14px "PingFang SC","Microsoft YaHei",sans-serif; }
+    .topbar { height:68px; display:flex; align-items:center; justify-content:space-between; padding:0 32px; background:#fff; border-bottom:1px solid var(--line); }
+    .title { font-size:18px; font-weight:600; } .operator { color:var(--muted); font-size:13px; } main { padding:16px; }
+    .panel { background:#fff; border:1px solid var(--line); } .filters { padding:22px 20px; border-bottom:1px solid var(--line); }
+    .filter-row { display:flex; align-items:center; gap:18px; } .filter-row + .filter-row { margin-top:16px; }
+    .filter-row .add-prospect { margin-left:auto; min-width:104px; }
+    .field { display:flex; align-items:center; gap:10px; white-space:nowrap; } label { color:#526074; }
+    input, select { height:34px; border:1px solid #dbe3eb; border-radius:17px; padding:0 14px; outline:none; color:var(--text); background:#fff; font:13px inherit; }
+    input:focus, select:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(41,199,177,.12); } select { min-width:112px; }
+    button { height:34px; min-width:74px; border:1px solid var(--primary); border-radius:17px; background:#fff; color:var(--deep); cursor:pointer; font:13px inherit; }
+    button.primary { background:var(--primary); color:#fff; } button:hover { filter:brightness(.97); }
+    .member-search { display:flex; align-items:center; height:36px; border:1px solid #dbe3eb; border-radius:18px; overflow:hidden; background:#fff; }
+    .member-search input { width:340px; height:34px; border:0; border-radius:0; padding-left:14px; }
+    .owner-picker { position:relative; } .owner-picker input { width:138px; }
+    .owner-options { position:absolute; z-index:5; top:40px; left:0; display:none; width:138px; max-height:170px; overflow:auto; padding:4px 0; border:1px solid #dbe3eb; border-radius:4px; background:#fff; box-shadow:0 8px 18px rgba(47,59,82,.12); }
+    .owner-options.show { display:block; } .owner-option, .owner-empty { height:32px; display:flex; align-items:center; padding:0 13px; }
+    .owner-option { color:#4f5d71; cursor:pointer; } .owner-option:hover, .owner-option.selected { color:var(--deep); background:#ecfbf8; } .owner-empty { color:#9aa6b5; }
+    .date { width:138px; } .date-range { display:flex; align-items:center; gap:7px; color:#9aa6b5; }
+    .number { width:76px; } .tag-search { width:130px; }
+    .table-wrap { overflow-x:auto; } table { width:100%; min-width:1448px; border-collapse:collapse; table-layout:fixed; }
+    th, td { height:50px; padding:0 14px; text-align:left; border-right:1px solid var(--line); border-bottom:1px solid var(--line); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    th { background:#fbfcfe; color:#435069; font-weight:700; } th:last-child, td:last-child { border-right:0; }
+    .member { color:#344055; } .phone { color:var(--muted); margin-left:8px; }
+    .tag { display:inline-flex; align-items:center; height:22px; margin-right:4px; padding:0 8px; border:1px solid #dbe3eb; border-radius:4px; color:#66758a; background:#f8fafc; font-size:12px; }
+    .action-link { display:inline-block; height:auto; min-width:0; padding:0; border:0; border-radius:0; color:var(--deep); background:transparent; font-size:13px; cursor:pointer; }
+    .action-link + .action-link { margin-left:6px; }
+    .action-link:hover { color:#128978; text-decoration:underline; filter:none; }
+    .experience { display:inline-flex; align-items:center; height:22px; padding:0 8px; border:1px solid #f5d7a7; border-radius:4px; color:var(--orange); background:#fff6e8; font-size:12px; }
+    .experience.done { color:var(--deep); background:#ecfbf8; border-color:#bdeee6; }
+    .empty { display:none; padding:66px 0; text-align:center; color:var(--muted); } .pagination { height:58px; display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:0 20px; color:var(--muted); font-size:13px; }
+    .page { display:grid; place-items:center; width:28px; height:28px; border:1px solid var(--primary); background:var(--primary); color:#fff; }
+    .toast { position:fixed; top:84px; left:50%; transform:translate(-50%,-12px); padding:10px 16px; border-radius:4px; color:#fff; background:rgba(47,59,82,.9); opacity:0; pointer-events:none; transition:.2s; } .toast.show { opacity:1; transform:translate(-50%,0); }
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="title">培训班准会员</div><div class="operator">培训班负责人</div></header>
+  <main><section class="panel">
+    <div class="filters">
+      <div class="filter-row"><div class="member-search"><input id="keyword" placeholder="输入姓名/手机号进行搜索" /></div><button class="primary" id="search">查询</button><button id="reset">重置</button><button class="primary add-prospect" id="addProspect">添加准会员</button></div>
+      <div class="filter-row">
+        <div class="field"><label for="owner">跟进人</label><div class="owner-picker"><input id="owner" autocomplete="off" placeholder="请输入跟进人" /><div class="owner-options" id="ownerOptions"></div></div></div>
+        <div class="field"><label>加入日期</label><div class="date-range"><input id="joinedStart" class="date" type="date" /><span>至</span><input id="joinedEnd" class="date" type="date" /></div></div>
+        <div class="field"><label>加入天数</label><div class="date-range"><input id="daysMin" class="number" type="number" min="0" placeholder="最小" /><span>至</span><input id="daysMax" class="number" type="number" min="0" placeholder="最大" /></div></div>
+        <div class="field"><label for="source">来源</label><select id="source"><option value="">全部</option><option>门店咨询</option><option>线上预约</option><option>老会员推荐</option></select></div>
+        <div class="field"><label for="experienceStatus">体验状态</label><select id="experienceStatus"><option value="">全部</option><option>未体验</option><option>已体验</option></select></div>
+      </div>
+      <div class="filter-row">
+        <div class="field"><label>最后跟进日期</label><div class="date-range"><input id="followedStart" class="date" type="date" /><span>至</span><input id="followedEnd" class="date" type="date" /></div></div>
+        <div class="field"><label for="tag">标签</label><select id="tag" class="tag-search"><option value="">全部</option><option>游泳启蒙</option><option>游泳进阶</option><option>少儿班</option><option>暑期班</option><option>一对一</option><option>周末</option><option>晚间</option></select></div>
+      </div>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th style="width:16%">准会员</th><th style="width:10%">跟进人</th><th style="width:12%">加入日期</th><th style="width:9%">加入天数</th><th style="width:11%">来源</th><th style="width:11%">体验状态</th><th style="width:9%">体验次数</th><th style="width:13%">最后跟进日期</th><th style="width:9%">标签</th><th style="width:8%">操作</th></tr></thead><tbody id="rows"></tbody></table><div class="empty" id="empty">暂无符合条件的准会员</div></div>
+    <div class="pagination"><span id="total">共 8 条</span><span>10 条/页</span><span class="page">1</span></div>
+  </section></main>
+  <div class="toast" id="toast"></div>
+  <script>
+    const prospects = [
+      {name:'黄一凡',phone:'138 4206 3195',owner:'张晨',joined:'2026-09-14',days:2,source:'门店咨询',experience:'未体验',count:0,followed:'2026-09-15',tags:['游泳启蒙','周末']},
+      {name:'宋思瑶',phone:'139 7826 4501',owner:'李娜',joined:'2026-09-12',days:4,source:'线上预约',experience:'已体验',count:1,followed:'2026-09-14',tags:['少儿班']},
+      {name:'冯子轩',phone:'136 2618 7093',owner:'王凯',joined:'2026-09-08',days:8,source:'老会员推荐',experience:'未体验',count:0,followed:'2026-09-10',tags:['暑期班']},
+      {name:'马可欣',phone:'158 4093 6572',owner:'张晨',joined:'2026-09-05',days:11,source:'线上预约',experience:'未体验',count:0,followed:'2026-09-13',tags:['一对一']},
+      {name:'陆宇航',phone:'137 8654 1029',owner:'李娜',joined:'2026-08-29',days:18,source:'门店咨询',experience:'已体验',count:2,followed:'2026-09-11',tags:['游泳进阶','晚间']},
+      {name:'沈悦宁',phone:'186 9502 3814',owner:'王凯',joined:'2026-08-25',days:22,source:'老会员推荐',experience:'未体验',count:0,followed:'2026-09-02',tags:['少儿班']},
+      {name:'叶嘉诚',phone:'135 7019 4268',owner:'张晨',joined:'2026-08-21',days:26,source:'线上预约',experience:'已体验',count:1,followed:'2026-09-09',tags:['游泳启蒙']},
+      {name:'何雨薇',phone:'188 2365 8917',owner:'李娜',joined:'2026-08-17',days:30,source:'门店咨询',experience:'未体验',count:0,followed:'2026-09-08',tags:['周末']}
+    ];
+    const $ = id => document.getElementById(id); const owners = ['张晨','李娜','王凯']; const clean = value => value.replaceAll(' ','');
+    function experienceClass(value) { return value === '已体验' ? 'done' : ''; }
+    function render() {
+      const keyword=clean($('keyword').value.trim()), owner=$('owner').value.trim(), joinedStart=$('joinedStart').value, joinedEnd=$('joinedEnd').value, min=$('daysMin').value, max=$('daysMax').value, source=$('source').value, experience=$('experienceStatus').value, followedStart=$('followedStart').value, followedEnd=$('followedEnd').value, tag=$('tag').value;
+      const result=prospects.filter(item => (!keyword || clean(item.name+item.phone).includes(keyword)) && (!owner || item.owner.includes(owner)) && (!joinedStart || item.joined>=joinedStart) && (!joinedEnd || item.joined<=joinedEnd) && (min==='' || item.days>=Number(min)) && (max==='' || item.days<=Number(max)) && (!source || item.source===source) && (!experience || item.experience===experience) && (!followedStart || item.followed>=followedStart) && (!followedEnd || item.followed<=followedEnd) && (!tag || item.tags.includes(tag)));
+      $('rows').innerHTML=result.map(item=>`<tr><td class="member">${item.name}<span class="phone">${item.phone}</span></td><td>${item.owner}</td><td>${item.joined}</td><td>${item.days} 天</td><td>${item.source}</td><td><span class="experience ${experienceClass(item.experience)}">${item.experience}</span></td><td>${item.count} 次</td><td>${item.followed}</td><td>${item.tags.map(tag=>`<span class="tag">${tag}</span>`).join('')}</td><td><button class="action-link" type="button">跟进</button><button class="action-link" type="button">标签</button></td></tr>`).join('');
+      $('empty').style.display=result.length?'none':'block'; $('total').textContent=`共 ${result.length} 条`;
+    }
+    function toast(message) { $('toast').textContent=message; $('toast').classList.add('show'); setTimeout(()=>$('toast').classList.remove('show'),1400); }
+    function renderOwnerOptions() { const keyword=$('owner').value.trim(), matched=owners.filter(name=>name.includes(keyword)); $('ownerOptions').innerHTML=matched.length?matched.map(name=>`<div class="owner-option ${name===keyword?'selected':''}" data-owner="${name}">${name}</div>`).join(''):'<div class="owner-empty">暂无匹配人员</div>'; $('ownerOptions').classList.add('show'); }
+    $('search').onclick=()=>{render();toast('已更新列表');};
+    $('owner').addEventListener('focus',renderOwnerOptions); $('owner').addEventListener('input',()=>{renderOwnerOptions();render();});
+    $('ownerOptions').addEventListener('mousedown',event=>{const option=event.target.closest('.owner-option');if(!option)return;$('owner').value=option.dataset.owner;$('ownerOptions').classList.remove('show');render();});
+    document.addEventListener('click',event=>{if(!event.target.closest('.owner-picker'))$('ownerOptions').classList.remove('show');});
+    $('reset').onclick=()=>{['keyword','owner','joinedStart','joinedEnd','daysMin','daysMax','source','experienceStatus','followedStart','followedEnd','tag'].forEach(id=>$(id).value='');$('ownerOptions').classList.remove('show');render();toast('已重置筛选');};
+    ['keyword','joinedStart','joinedEnd','daysMin','daysMax','source','experienceStatus','followedStart','followedEnd','tag'].forEach(id=>$(id).addEventListener('change',render));
+    $('keyword').addEventListener('keydown',event=>{if(event.key==='Enter'){$('search').click();}}); render();
+  </script>
+</body>
+</html>
