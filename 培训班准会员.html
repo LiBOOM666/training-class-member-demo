@@ -39,6 +39,50 @@
     .empty { display:none; padding:66px 0; text-align:center; color:var(--muted); } .pagination { height:58px; display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:0 20px; color:var(--muted); font-size:13px; }
     .page { display:grid; place-items:center; width:28px; height:28px; border:1px solid var(--primary); background:var(--primary); color:#fff; }
     .toast { position:fixed; top:84px; left:50%; transform:translate(-50%,-12px); padding:10px 16px; border-radius:4px; color:#fff; background:rgba(47,59,82,.9); opacity:0; pointer-events:none; transition:.2s; } .toast.show { opacity:1; transform:translate(-50%,0); }
+    .modal-mask { position:fixed; z-index:20; inset:0; display:none; align-items:center; justify-content:center; background:rgba(24,34,48,.42); }
+    .modal-mask.show { display:flex; }
+    .modal { width:520px; overflow:hidden; border-radius:6px; background:#fff; box-shadow:0 18px 42px rgba(24,34,48,.22); }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 22px; border-bottom:1px solid var(--line); font-size:16px; font-weight:600; }
+    .modal-close { width:28px; min-width:28px; height:28px; border:0; color:#8894a6; font-size:22px; line-height:24px; }
+    .modal-close:hover { color:#526074; background:#f4f7fa; }
+    .modal-body { padding:22px; }
+    .modal-member { margin-bottom:20px; color:#758195; font-size:13px; }
+    .form-item + .form-item { margin-top:22px; }
+    .form-label { display:block; margin-bottom:10px; color:#435069; }
+    .required::before { margin-right:4px; color:#e65b5b; content:'*'; }
+    .follow-types { display:flex; align-items:center; gap:28px; min-height:34px; }
+    .follow-types label, .tag-options label { display:inline-flex; align-items:center; gap:7px; color:#526074; cursor:pointer; }
+    .follow-types input, .tag-options input { width:16px; height:16px; margin:0; accent-color:var(--primary); }
+    .follow-content { display:flex; gap:10px; }
+    .follow-content textarea { flex:1; min-height:86px; resize:vertical; padding:10px 12px; border:1px solid #dbe3eb; border-radius:4px; color:var(--text); font:13px inherit; outline:none; }
+    .follow-content textarea:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(41,199,177,.12); }
+    .upload-label { display:flex; flex:0 0 88px; flex-direction:column; align-items:center; justify-content:center; height:86px; border:1px dashed #bfd0dc; border-radius:4px; color:#758195; cursor:pointer; font-size:12px; }
+    .upload-label:hover { border-color:var(--primary); color:var(--deep); background:#f6fffd; }
+    .upload-label input { display:none; }
+    .upload-name { min-height:18px; margin-top:7px; color:#758195; font-size:12px; }
+    .validation-message { display:none; margin-top:8px; color:#e65b5b; font-size:12px; }
+    .validation-message.show { display:block; }
+    .tag-options { display:flex; flex-wrap:wrap; gap:14px 24px; padding:4px 0; }
+    .modal-footer { display:flex; justify-content:flex-end; gap:10px; padding:14px 22px; border-top:1px solid var(--line); }
+    #followModal .modal { width:600px; max-width:calc(100vw - 32px); max-height:calc(100vh - 48px); display:flex; flex-direction:column; border-radius:10px; }
+    #followModal .modal-header { flex-shrink:0; height:64px; padding:0 28px; font-size:18px; }
+    #followModal .modal-body { padding:24px 28px 28px; overflow-y:auto; }
+    #followModal .modal-member { margin-bottom:24px; padding:12px 16px; border-radius:6px; background:#f5f8fa; color:#526074; line-height:22px; }
+    #followModal .form-label { margin-bottom:12px; font-weight:500; }
+    #followModal .follow-types { gap:36px; }
+    #followModal .follow-content { display:block; }
+    #followModal textarea { display:block; width:100%; min-height:144px; padding:14px; line-height:22px; border-radius:6px; font-family:inherit; font-size:14px; }
+    #followModal textarea::placeholder { color:#a0aab7; }
+    .image-area { display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; }
+    #followModal .upload-label { flex:none; width:88px; height:88px; gap:6px; border-radius:6px; background:#fafcfd; }
+    .upload-plus { font-size:26px; font-weight:300; line-height:28px; }
+    .image-preview { position:relative; width:88px; height:88px; }
+    .image-preview img { width:100%; height:100%; object-fit:cover; border:1px solid var(--line); border-radius:6px; }
+    .image-remove { position:absolute; top:-6px; right:-6px; width:22px; min-width:22px; height:22px; border:2px solid #fff; border-radius:50%; background:#657387; color:#fff; font-size:16px; line-height:16px; }
+    #followModal .upload-name { margin-top:12px; line-height:20px; }
+    #followModal .modal-footer { flex-shrink:0; padding:18px 28px; gap:12px; background:#fcfdfe; }
+    #followModal .modal-footer button { height:38px; min-width:88px; border-radius:6px; }
+    #followModal .modal-footer button:not(.primary) { border-color:#dbe3eb; color:#526074; }
   </style>
 </head>
 <body>
@@ -62,6 +106,24 @@
     <div class="pagination"><span id="total">共 8 条</span><span>10 条/页</span><span class="page">1</span></div>
   </section></main>
   <div class="toast" id="toast"></div>
+  <div class="modal-mask" id="followModal" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="followTitle">
+      <div class="modal-header"><span id="followTitle">添加跟进</span><button class="modal-close" type="button" data-close="followModal" aria-label="关闭">×</button></div>
+      <div class="modal-body">
+        <div class="modal-member" id="followMember"></div>
+        <div class="form-item"><span class="form-label">跟进方式（选填）</span><div class="follow-types"><label><input type="radio" name="followType" value="电话" />电话</label><label><input type="radio" name="followType" value="微信" />微信</label><label><input type="radio" name="followType" value="到店" />到店</label></div></div>
+        <div class="form-item"><label class="form-label required" for="followContent">跟进内容</label><div class="follow-content"><textarea id="followContent" placeholder="请输入本次沟通内容"></textarea></div><div class="image-area" id="imageArea"><label class="upload-label"><span class="upload-plus">＋</span><span>上传图片</span><input id="followImage" type="file" accept="image/*" multiple /></label></div><div class="upload-name" id="uploadName">文字和图片至少填写一项</div><div class="validation-message" id="followError">请填写跟进内容或上传图片</div></div>
+      </div>
+      <div class="modal-footer"><button type="button" data-close="followModal">取消</button><button class="primary" id="saveFollow" type="button">保存</button></div>
+    </section>
+  </div>
+  <div class="modal-mask" id="tagModal" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="tagTitle">
+      <div class="modal-header"><span id="tagTitle">编辑标签</span><button class="modal-close" type="button" data-close="tagModal" aria-label="关闭">×</button></div>
+      <div class="modal-body"><div class="modal-member" id="tagMember"></div><div class="form-item"><span class="form-label">选择标签</span><div class="tag-options" id="tagOptions"></div></div></div>
+      <div class="modal-footer"><button type="button" data-close="tagModal">取消</button><button class="primary" id="saveTags" type="button">保存</button></div>
+    </section>
+  </div>
   <script>
     const prospects = [
       {name:'黄一凡',phone:'138 4206 3195',owner:'张晨',joined:'2026-09-14',days:2,source:'门店咨询',experience:'未体验',count:0,followed:'2026-09-15',tags:['游泳启蒙','周末']},
@@ -78,15 +140,29 @@
     function render() {
       const keyword=clean($('keyword').value.trim()), owner=$('owner').value.trim(), joinedStart=$('joinedStart').value, joinedEnd=$('joinedEnd').value, min=$('daysMin').value, max=$('daysMax').value, source=$('source').value, experience=$('experienceStatus').value, followedStart=$('followedStart').value, followedEnd=$('followedEnd').value, tag=$('tag').value;
       const result=prospects.filter(item => (!keyword || clean(item.name+item.phone).includes(keyword)) && (!owner || item.owner.includes(owner)) && (!joinedStart || item.joined>=joinedStart) && (!joinedEnd || item.joined<=joinedEnd) && (min==='' || item.days>=Number(min)) && (max==='' || item.days<=Number(max)) && (!source || item.source===source) && (!experience || item.experience===experience) && (!followedStart || item.followed>=followedStart) && (!followedEnd || item.followed<=followedEnd) && (!tag || item.tags.includes(tag)));
-      $('rows').innerHTML=result.map(item=>`<tr><td class="member">${item.name}<span class="phone">${item.phone}</span></td><td>${item.owner}</td><td>${item.joined}</td><td>${item.days} 天</td><td>${item.source}</td><td><span class="experience ${experienceClass(item.experience)}">${item.experience}</span></td><td>${item.count} 次</td><td>${item.followed}</td><td>${item.tags.map(tag=>`<span class="tag">${tag}</span>`).join('')}</td><td><button class="action-link" type="button">跟进</button><button class="action-link" type="button">标签</button></td></tr>`).join('');
+      $('rows').innerHTML=result.map(item=>{const index=prospects.indexOf(item);return `<tr><td class="member">${item.name}<span class="phone">${item.phone}</span></td><td>${item.owner}</td><td>${item.joined}</td><td>${item.days} 天</td><td>${item.source}</td><td><span class="experience ${experienceClass(item.experience)}">${item.experience}</span></td><td>${item.count} 次</td><td>${item.followed}</td><td>${item.tags.map(tag=>`<span class="tag">${tag}</span>`).join('')}</td><td><button class="action-link" type="button" data-action="follow" data-index="${index}">跟进</button><button class="action-link" type="button" data-action="tags" data-index="${index}">标签</button></td></tr>`}).join('');
       $('empty').style.display=result.length?'none':'block'; $('total').textContent=`共 ${result.length} 条`;
     }
     function toast(message) { $('toast').textContent=message; $('toast').classList.add('show'); setTimeout(()=>$('toast').classList.remove('show'),1400); }
+    const availableTags=['游泳启蒙','游泳进阶','少儿班','暑期班','一对一','周末','晚间']; let activeIndex=null;
+    function openModal(id) { $(id).classList.add('show'); $(id).setAttribute('aria-hidden','false'); }
+    function closeModal(id) { $(id).classList.remove('show'); $(id).setAttribute('aria-hidden','true'); }
+    let followImages=[];
+    function renderImages() { $('imageArea').querySelectorAll('.image-preview').forEach(el=>el.remove()); followImages.forEach((image,index)=>{const preview=document.createElement('div');preview.className='image-preview';const img=document.createElement('img');img.src=image.url;img.alt=image.file.name;const remove=document.createElement('button');remove.type='button';remove.className='image-remove';remove.textContent='×';remove.setAttribute('aria-label','移除图片');remove.onclick=()=>{URL.revokeObjectURL(image.url);followImages.splice(index,1);renderImages();};preview.append(img,remove);$('imageArea').insertBefore(preview,$('imageArea').lastElementChild);});$('uploadName').textContent=followImages.length?`已选择 ${followImages.length} 张图片，可继续添加`:'文字和图片至少填写一项'; }
+    function openFollow(index) { activeIndex=index; const item=prospects[index]; $('followMember').textContent=`准会员：${item.name} ${item.phone}`; $('followContent').value=''; $('followImage').value=''; followImages.forEach(image=>URL.revokeObjectURL(image.url));followImages=[];renderImages(); $('followError').classList.remove('show'); document.querySelectorAll('input[name="followType"]').forEach(input=>input.checked=false); openModal('followModal'); }
+    function openTags(index) { activeIndex=index; const item=prospects[index]; $('tagMember').textContent=`准会员：${item.name} ${item.phone}`; $('tagOptions').innerHTML=availableTags.map(tag=>`<label><input type="checkbox" value="${tag}" ${item.tags.includes(tag)?'checked':''} />${tag}</label>`).join(''); openModal('tagModal'); }
     function renderOwnerOptions() { const keyword=$('owner').value.trim(), matched=owners.filter(name=>name.includes(keyword)); $('ownerOptions').innerHTML=matched.length?matched.map(name=>`<div class="owner-option ${name===keyword?'selected':''}" data-owner="${name}">${name}</div>`).join(''):'<div class="owner-empty">暂无匹配人员</div>'; $('ownerOptions').classList.add('show'); }
     $('search').onclick=()=>{render();toast('已更新列表');};
     $('owner').addEventListener('focus',renderOwnerOptions); $('owner').addEventListener('input',()=>{renderOwnerOptions();render();});
     $('ownerOptions').addEventListener('mousedown',event=>{const option=event.target.closest('.owner-option');if(!option)return;$('owner').value=option.dataset.owner;$('ownerOptions').classList.remove('show');render();});
     document.addEventListener('click',event=>{if(!event.target.closest('.owner-picker'))$('ownerOptions').classList.remove('show');});
+    $('rows').addEventListener('click',event=>{const button=event.target.closest('[data-action]');if(!button)return;button.dataset.action==='follow'?openFollow(Number(button.dataset.index)):openTags(Number(button.dataset.index));});
+    document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>closeModal(button.dataset.close)));
+    document.querySelectorAll('.modal-mask').forEach(mask=>mask.addEventListener('click',event=>{if(event.target===mask)closeModal(mask.id);}));
+    $('followImage').addEventListener('change',()=>{[...$('followImage').files].filter(file=>file.type.startsWith('image/')).forEach(file=>followImages.push({file,url:URL.createObjectURL(file)}));$('followImage').value='';renderImages();$('followError').classList.remove('show');});
+    $('followContent').addEventListener('input',()=>$('followError').classList.remove('show'));
+    $('saveFollow').onclick=()=>{const content=$('followContent').value.trim();if(!content&&!followImages.length){$('followError').classList.add('show');return;}prospects[activeIndex].followed='2026-10-14';closeModal('followModal');render();toast('跟进已保存');};
+    $('saveTags').onclick=()=>{prospects[activeIndex].tags=[...$('tagOptions').querySelectorAll('input:checked')].map(input=>input.value);closeModal('tagModal');render();toast('标签已保存');};
     $('reset').onclick=()=>{['keyword','owner','joinedStart','joinedEnd','daysMin','daysMax','source','experienceStatus','followedStart','followedEnd','tag'].forEach(id=>$(id).value='');$('ownerOptions').classList.remove('show');render();toast('已重置筛选');};
     ['keyword','joinedStart','joinedEnd','daysMin','daysMax','source','experienceStatus','followedStart','followedEnd','tag'].forEach(id=>$(id).addEventListener('change',render));
     $('keyword').addEventListener('keydown',event=>{if(event.key==='Enter'){$('search').click();}}); render();
